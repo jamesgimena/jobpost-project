@@ -4,15 +4,15 @@ const User = require("../models/userModel");
 
 // @desc get all User
 // @route  GET /api/users
-// @access public
+// @access private
 const getUsers = async (req, res) => {
-  const users = await User.find();
+  const users = await User.find({ applicant_id: req.applicant.id }); // req.applicant.id from applicant model
   res.status(200).json(users);
 };
 
 // @desc get User info
 // @route  GET /api/users/:id
-// @access public
+// @access private
 const getUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
   if(!user) {
@@ -23,10 +23,9 @@ const getUser = asyncHandler(async (req, res) => {
 });
 
 // @desc Add User
-// @route  POST /api/add/
-// @access public
+// @route  POST /api/user/add
+// @access private
 const addUser = asyncHandler(async (req, res) => {
-  console.log("The res body is: "+ res.body);
   const { name, email }= req.body;
   if(!name || !email) {
     res.status(400);
@@ -34,19 +33,26 @@ const addUser = asyncHandler(async (req, res) => {
   }
   const addUsers = await User.create({
     name,
-    email
+    email,
+    applicant_id: req.applicant.id
   });
+  console.log(addUser);
   res.status(201).json(addUsers);
 });
 
 // @desc Edit User
 // @route  PUT /api/users/:1
-// @access public
+// @access private
 const editUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
   if(!user) {
     res.status(404);
     throw new Error("No user found!");
+  }
+
+  if(user.user_id.toString() !== req.user.id) {
+    res.status(403);
+    throw new Error("User don't have permission");
   }
   
   const update = await User.findByIdAndUpdate(
@@ -60,12 +66,17 @@ const editUser = asyncHandler(async (req, res) => {
 
 // @desc Delete User
 // @route  DELETE /api/users/:1
-// @access public
+// @access private
 const deleteUser = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id);
   if(!user) {
     res.status(404);
     throw new Error("No user found!");
+  }
+
+  if(user.user_id.toString() !== req.user.id) {
+    res.status(403);
+    throw new Error("User don't have permission");
   }
   
   await User.deleteOne();

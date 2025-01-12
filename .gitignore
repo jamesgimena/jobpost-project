@@ -7,3 +7,7 @@ node_modules/
 # Ignore OS generated files
 .DS_Store
 Thumbs.db
+
+# Environment files
+.env            # Environment configuration
+config.json     # Project-specific config files
